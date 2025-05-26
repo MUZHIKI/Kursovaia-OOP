@@ -1,5 +1,5 @@
-import java.time.LocalDate;
 package Model;
+import java.time.LocalDate;
 /**
  * Абстрактный класс, представляющий человека в системе.
  * Наследует базовые поля от TicketEntity и добавляет общие для всех персон характеристики.

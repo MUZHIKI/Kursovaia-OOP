@@ -1,5 +1,6 @@
 package Model;
-
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -37,7 +38,23 @@ public abstract class Ticket {
      * Абстрактный метод для расчёта итоговой стоимости.
      * @return стоимость с учётом скидок/наценок
      */
-    public abstract double calculateFinalPrice();
+    private final StringProperty formattedPrice = new SimpleStringProperty();
+
+    public StringProperty formattedPriceProperty() {
+        return formattedPrice;
+    }
+
+    public String getFormattedPrice() {
+        return formattedPrice.get();
+    }
+
+    // Обновите метод calculateFinalPrice(), чтобы он обновлял formattedPrice
+    public double calculateFinalPrice() {
+        double finalPrice = passenger.calculateTicketPrice(basePrice);
+        formattedPrice.set(String.format("%.2f руб.", finalPrice)); // Форматирование
+        return finalPrice;
+    }
+
 
     @Override
     public String toString() {
