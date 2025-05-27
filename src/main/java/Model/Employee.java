@@ -15,11 +15,12 @@ public abstract class Employee extends Person {
 
     public Employee(String firstName,
                     String lastName,
+                    String middleName,
                     LocalDate birthDate,
                     String contactPhone,
                     LocalDate hireDate,
                     String department) {
-        super(firstName, lastName, birthDate, contactPhone);
+        super(firstName, lastName, middleName,birthDate, contactPhone);
         this.employeeId = generateEmployeeId();
         setHireDate(hireDate);
         setDepartment(department);

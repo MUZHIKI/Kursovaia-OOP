@@ -9,9 +9,10 @@ public class SeniorPassenger extends Passenger {
 
     public SeniorPassenger(String firstName,
                            String lastName,
+                           String middleName,
                            LocalDate birthDate,
                            String contactPhone) {
-        super(firstName, lastName, birthDate, contactPhone);
+        super(firstName, lastName, middleName, birthDate, contactPhone);
         validateAge(birthDate);
     }
 

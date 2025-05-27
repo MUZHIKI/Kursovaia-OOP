@@ -12,13 +12,14 @@ public class Driver extends Employee {
 
     public Driver(String firstName,
                   String lastName,
+                  String middleName,
                   LocalDate birthDate,
                   String contactPhone,
                   LocalDate hireDate,
                   String department,
                   String licenseNumber,
                   String trainModel) {
-        super(firstName, lastName, birthDate, contactPhone, hireDate, department);
+        super(firstName, lastName, middleName, birthDate, contactPhone, hireDate, department);
         setLicenseNumber(licenseNumber);
         setTrainModel(trainModel);
     }

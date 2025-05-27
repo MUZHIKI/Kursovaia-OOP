@@ -6,9 +6,10 @@ public class RegularPassenger extends Passenger {
 
     public RegularPassenger(String firstName,
                             String lastName,
+                            String middleName,
                             LocalDate birthDate,
                             String contactPhone) {
-        super(firstName, lastName, birthDate, contactPhone);
+        super(firstName, lastName,middleName ,birthDate, contactPhone);
     }
 
     @Override

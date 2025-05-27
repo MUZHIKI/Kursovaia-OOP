@@ -1,6 +1,10 @@
 package GUI.Dialogs;
 
-import Model.*;
+import Model.Passenger;
+import Model.VIPPassenger;
+import Model.ChildPassenger;
+import Model.SeniorPassenger;
+import Model.RegularPassenger;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.util.StringConverter;
@@ -9,6 +13,7 @@ import java.time.LocalDate;
 public class AddPassengerDialog extends Dialog<Passenger> {
     private final TextField firstNameField = new TextField();
     private final TextField lastNameField = new TextField();
+    private final TextField middleNameField = new TextField(); // Новое поле для отчества
     private final DatePicker birthDatePicker = new DatePicker();
     private final TextField phoneField = new TextField();
     private final ComboBox<String> typeCombo = new ComboBox<>();
@@ -45,16 +50,18 @@ public class AddPassengerDialog extends Dialog<Passenger> {
         grid.add(firstNameField, 1, 1);
         grid.add(new Label("Фамилия:"), 0, 2);
         grid.add(lastNameField, 1, 2);
-        grid.add(new Label("Дата рождения:"), 0, 3);
-        grid.add(birthDatePicker, 1, 3);
-        grid.add(new Label("Телефон:"), 0, 4);
-        grid.add(phoneField, 1, 4);
+        grid.add(new Label("Отчество:"), 0, 3); // Добавлено отчество
+        grid.add(middleNameField, 1, 3);
+        grid.add(new Label("Дата рождения:"), 0, 4);
+        grid.add(birthDatePicker, 1, 4);
+        grid.add(new Label("Телефон:"), 0, 5);
+        grid.add(phoneField, 1, 5);
 
         // VIP-поля (скрыты по умолчанию)
-        grid.add(new Label("VIP доступ:"), 0, 5);
-        grid.add(loungeAccessCheck, 1, 5);
-        grid.add(new Label("Особые пожелания:"), 0, 6);
-        grid.add(specialRequestsArea, 1, 6);
+        grid.add(new Label("VIP доступ:"), 0, 6);
+        grid.add(loungeAccessCheck, 1, 6);
+        grid.add(new Label("Особые пожелания:"), 0, 7);
+        grid.add(specialRequestsArea, 1, 7);
 
         toggleVipFields(); // Скрыть/показать VIP-поля
         getDialogPane().setContent(grid);
@@ -98,6 +105,8 @@ public class AddPassengerDialog extends Dialog<Passenger> {
             throw new IllegalArgumentException("Введите имя");
         if (lastNameField.getText().trim().isEmpty())
             throw new IllegalArgumentException("Введите фамилию");
+        if (middleNameField.getText().trim().isEmpty()) // Проверка отчества
+            throw new IllegalArgumentException("Введите отчество");
         if (birthDatePicker.getValue() == null)
             throw new IllegalArgumentException("Укажите дату рождения");
         if (phoneField.getText().trim().isEmpty())
@@ -108,6 +117,7 @@ public class AddPassengerDialog extends Dialog<Passenger> {
         return new ChildPassenger(
                 firstNameField.getText().trim(),
                 lastNameField.getText().trim(),
+                middleNameField.getText().trim(), // Передача отчества
                 birthDatePicker.getValue(),
                 phoneField.getText().trim()
         );
@@ -117,6 +127,7 @@ public class AddPassengerDialog extends Dialog<Passenger> {
         return new SeniorPassenger(
                 firstNameField.getText().trim(),
                 lastNameField.getText().trim(),
+                middleNameField.getText().trim(), // Передача отчества
                 birthDatePicker.getValue(),
                 phoneField.getText().trim()
         );
@@ -126,6 +137,7 @@ public class AddPassengerDialog extends Dialog<Passenger> {
         return new VIPPassenger(
                 firstNameField.getText().trim(),
                 lastNameField.getText().trim(),
+                middleNameField.getText().trim(), // Передача отчества
                 birthDatePicker.getValue(),
                 phoneField.getText().trim(),
                 loungeAccessCheck.isSelected(),
@@ -137,6 +149,7 @@ public class AddPassengerDialog extends Dialog<Passenger> {
         return new RegularPassenger(
                 firstNameField.getText().trim(),
                 lastNameField.getText().trim(),
+                middleNameField.getText().trim(), // Передача отчества
                 birthDatePicker.getValue(),
                 phoneField.getText().trim()
         );

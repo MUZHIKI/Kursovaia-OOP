@@ -11,10 +11,11 @@ public abstract class DiscountPassenger extends Passenger {
 
     public DiscountPassenger(String firstName,
                              String lastName,
+                             String middleName,
                              LocalDate birthDate,
                              String contactPhone,
                              double discountRate) {
-        super(firstName, lastName, birthDate, contactPhone);
+        super(firstName, lastName,middleName ,birthDate, contactPhone);
         setDiscountRate(discountRate);
     }
 

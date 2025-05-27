@@ -11,12 +11,13 @@ public class Conductor extends Employee {
 
     public Conductor(String firstName,
                      String lastName,
+                     String middleName,
                      LocalDate birthDate,
                      String contactPhone,
                      LocalDate hireDate,
                      String department,
                      int assignedCarriage) {
-        super(firstName, lastName, birthDate, contactPhone, hireDate, department);
+        super(firstName, lastName, middleName, birthDate, contactPhone, hireDate, department);
         setAssignedCarriage(assignedCarriage);
     }
 

@@ -9,11 +9,12 @@ public class VIPPassenger extends Passenger {
 
     public VIPPassenger(String firstName,
                         String lastName,
+                        String middleName,
                         LocalDate birthDate,
                         String contactPhone,
                         boolean hasLoungeAccess,
                         String specialRequests) {
-        super(firstName, lastName, birthDate, contactPhone);
+        super(firstName, lastName, middleName,birthDate, contactPhone);
         this.hasLoungeAccess = hasLoungeAccess;
         this.specialRequests = specialRequests;
     }

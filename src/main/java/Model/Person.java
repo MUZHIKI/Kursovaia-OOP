@@ -7,13 +7,15 @@ import java.time.LocalDate;
 public abstract class Person extends TicketEntity {
     private String firstName;
     private String lastName;
+    private String middleName;
     private LocalDate birthDate;
     private String contactPhone;
 
-    public Person(String firstName, String lastName, LocalDate birthDate, String contactPhone) {
+    public Person(String firstName, String lastName,String middleName, LocalDate birthDate, String contactPhone) {
         super(); // Вызов конструктора TicketEntity
         setFirstName(firstName);
         setLastName(lastName);
+        setMiddleName(middleName);
         setBirthDate(birthDate);
         setContactPhone(contactPhone);
     }
@@ -31,6 +33,12 @@ public abstract class Person extends TicketEntity {
             throw new IllegalArgumentException("Фамилия не может быть пустой");
         }
         this.lastName = lastName.trim();
+    }
+    public void setMiddleName(String middleName) {
+        if (middleName == null || middleName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Отчество не может быть пустым");
+        }
+        this.middleName = middleName.trim();
     }
 
     public void setBirthDate(LocalDate birthDate) {
@@ -56,6 +64,9 @@ public abstract class Person extends TicketEntity {
     public String getLastName() {
         return lastName;
     }
+    public String getMiddleName() {
+        return middleName;
+    }
 
     public LocalDate getBirthDate() {
         return birthDate;
@@ -72,8 +83,8 @@ public abstract class Person extends TicketEntity {
     @Override
     public String getDetails() {
         return String.format(
-                "%s %s | Возраст: %d | Телефон: %s",
-                firstName, lastName, getAge(), contactPhone
+                "%s %s %s | Возраст: %d | Телефон: %s",
+                firstName, lastName,middleName, getAge(), contactPhone
         );
     }
 

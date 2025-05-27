@@ -43,6 +43,7 @@ public class MainWindow extends Application {
             AddPassengerDialog dialog = new AddPassengerDialog();
             dialog.showAndWait().ifPresent(passenger -> {
                 passengers.add(passenger);
+                passengerTable.refresh(); // Обновление таблицы пассажиров
                 showAlert("Успех", "Добавлен пассажир: " + passenger.getDetails(), Alert.AlertType.INFORMATION);
             });
         });
@@ -52,6 +53,7 @@ public class MainWindow extends Application {
             BookTicketDialog dialog = new BookTicketDialog(passengers);
             dialog.showAndWait().ifPresent(ticket -> {
                 tickets.add(ticket);
+                ticketTable.refresh(); // Обновление таблицы билетов
                 showAlert("Успех", "Оформлен билет: " + ticket.getTicketId(), Alert.AlertType.INFORMATION);
             });
         });

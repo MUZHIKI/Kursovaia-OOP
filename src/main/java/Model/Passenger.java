@@ -9,9 +9,10 @@ public abstract class Passenger extends Person {
 
     public Passenger(String firstName,
                      String lastName,
+                     String middleName,
                      LocalDate birthDate,
                      String contactPhone) {
-        super(firstName, lastName, birthDate, contactPhone);
+        super(firstName, lastName,middleName, birthDate, contactPhone);
     }
 
     // Общие методы для всех пассажиров
@@ -21,8 +22,9 @@ public abstract class Passenger extends Person {
     @Override
     public String getDetails() {
         return String.format(
-                "%s %s | Возраст: %d | Телефон: %s",
-                getFirstName(), getLastName(), getAge(), getContactPhone()
+                "%s %s %s | Возраст: %d | Телефон: %s",
+                getFirstName(), getLastName(),getMiddleName(), getAge(), getContactPhone()
         );
     }
+
 }
