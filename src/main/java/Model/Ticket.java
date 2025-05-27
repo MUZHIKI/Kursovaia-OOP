@@ -2,25 +2,23 @@ package Model;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * Абстрактный класс билета. Содержит информацию о поездке:
- * - Поезд
- * - Вагон
- * - Место
- * - Стоимость
+ * Абстрактный класс билета. Содержит информацию о поездке.
  */
 public abstract class Ticket {
-    protected final String ticketId;       // Уникальный ID
-    protected LocalDateTime createdAt;    // Дата создания
-    protected String status;              // ACTIVE, USED, CANCELLED
-    protected double basePrice;           // Базовая стоимость
-    protected Passenger passenger;        // Пассажир
-    protected String trainId;             // Идентификатор поезда
-    protected int carriageNumber;         // Номер вагона (1-10)
-    protected int seatNumber;             // Номер места (1-30)
+    public enum Status { ACTIVE, USED, CANCELLED }
+
+    protected final String ticketId;
+    protected final LocalDate createdAt;
+    protected Status status;
+    protected double basePrice; // Базовая цена
+    protected Passenger passenger;
+    protected String trainId;
+    protected int carriageNumber;
+    protected int seatNumber;
     protected final StringProperty formattedPrice = new SimpleStringProperty();
 
     public Ticket(double basePrice,
@@ -31,8 +29,8 @@ public abstract class Ticket {
         validateInput(trainId, carriageNumber, seatNumber);
 
         this.ticketId = UUID.randomUUID().toString();
-        this.createdAt = LocalDateTime.now();
-        this.status = "ACTIVE";
+        this.createdAt = LocalDate.now();
+        this.status = Status.ACTIVE;
         this.basePrice = basePrice;
         this.passenger = passenger;
         this.trainId = trainId;
@@ -44,37 +42,47 @@ public abstract class Ticket {
     // Валидация входных данных
     private void validateInput(String trainId, int carriage, int seat) {
         if (trainId == null || trainId.trim().isEmpty()) {
-            throw new IllegalArgumentException("Идентификатор поезда не может быть пустым");
+            throw new IllegalArgumentException("[Ошибка] Идентификатор поезда не может быть пустым");
         }
         if (carriage < 1 || carriage > 10) {
-            throw new IllegalArgumentException("Номер вагона должен быть от 1 до 10");
+            throw new IllegalArgumentException("[Ошибка] Номер вагона должен быть от 1 до 10 (получено: " + carriage + ")");
         }
         if (seat < 1 || seat > 30) {
-            throw new IllegalArgumentException("Номер места должен быть от 1 до 30");
+            throw new IllegalArgumentException("[Ошибка] Номер места должен быть от 1 до 30 (получено: " + seat + ")");
         }
     }
 
     // Обновление отформатированной цены
     protected void updateFormattedPrice() {
-        formattedPrice.set(String.format("%.2f руб.", calculateFinalPrice()));
+        formattedPrice.set(String.format("%,.2f руб.", getPrice()));
     }
 
     /**
-     * Абстрактный метод для расчёта итоговой стоимости.
+     * Возвращает итоговую стоимость билета (после применения скидок).
      */
     public abstract double calculateFinalPrice();
 
+    /**
+     * Геттер для свойства "price" (используется в TableView).
+     */
+    public double getPrice() {
+        return calculateFinalPrice();
+    }
+
     // Геттеры
     public String getTicketId() { return ticketId; }
+    public LocalDate getCreatedAt() { return createdAt; }
+    public Status getStatus() { return status; }
     public String getFormattedPrice() { return formattedPrice.get(); }
     public StringProperty formattedPriceProperty() { return formattedPrice; }
-    public String getStatus() { return status; }
     public String getTrainId() { return trainId; }
     public int getCarriageNumber() { return carriageNumber; }
     public int getSeatNumber() { return seatNumber; }
+    public Passenger getPassenger() { return passenger; }
+    public double getBasePrice() { return basePrice; } // Геттер для базовой цены
 
     // Сеттер статуса
-    public void setStatus(String status) {
+    public void setStatus(Status status) {
         this.status = status;
         updateFormattedPrice();
     }
@@ -82,8 +90,13 @@ public abstract class Ticket {
     @Override
     public String toString() {
         return String.format(
-                "Билет %s | Поезд: %s | Вагон %d, место %d | Стоимость: %s",
-                ticketId.substring(0, 8), trainId, carriageNumber, seatNumber, formattedPrice.get()
+                "Билет %s | Статус: %s | Поезд: %s | Вагон %d, место %d | Стоимость: %s",
+                ticketId.substring(0, 8), status, trainId, carriageNumber, seatNumber, formattedPrice.get()
         );
     }
+
+    /**
+     * Возвращает дату отправления (для отображения в таблице).
+     */
+    public abstract LocalDate getDepartureDate();
 }

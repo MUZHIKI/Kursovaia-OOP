@@ -3,9 +3,9 @@ package GUI.Dialogs;
 import Model.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.util.StringConverter;
 import java.time.LocalDate;
 import javafx.collections.ObservableList;
+import javafx.util.StringConverter;
 
 public class BookTicketDialog extends Dialog<Ticket> {
     private final ComboBox<Passenger> passengerCombo = new ComboBox<>();
@@ -16,11 +16,13 @@ public class BookTicketDialog extends Dialog<Ticket> {
     private final Spinner<Integer> seatSpinner = new Spinner<>(1, 30, 1);
     private final DatePicker departurePicker = new DatePicker();
     private final DatePicker returnPicker = new DatePicker();
+    private final DatePicker seasonStartPicker = new DatePicker(); // Новое поле для сезонного билета
     private final Spinner<Integer> durationSpinner = new Spinner<>(1, 365, 30);
 
     public BookTicketDialog(ObservableList<Passenger> passengers) {
         setupUI(passengers);
         setupLogic();
+        setupValidation();
     }
 
     private void setupUI(ObservableList<Passenger> passengers) {
@@ -30,41 +32,54 @@ public class BookTicketDialog extends Dialog<Ticket> {
         // Настройка ComboBox для пассажиров
         passengerCombo.setItems(passengers);
         passengerCombo.setConverter(new PassengerConverter());
+        passengerCombo.setPromptText("Выберите пассажира");
 
         // Настройка ComboBox для типа билета
         typeCombo.getItems().addAll("Одноразовый", "Туда-обратно", "Сезонный");
         typeCombo.setValue("Одноразовый");
+
+        // Настройка формата полей
+        priceField.setPromptText("Введите цену");
+        trainIdField.setPromptText("Номер поезда");
+        seasonStartPicker.setValue(LocalDate.now());
 
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
 
         // Общие поля
-        grid.add(new Label("Пассажир:"), 0, 0);
+        grid.add(createRequiredLabel("Пассажир:"), 0, 0);
         grid.add(passengerCombo, 1, 0);
-        grid.add(new Label("Тип билета:"), 0, 1);
+        grid.add(createRequiredLabel("Тип билета:"), 0, 1);
         grid.add(typeCombo, 1, 1);
-        grid.add(new Label("Цена:"), 0, 2);
+        grid.add(createRequiredLabel("Цена:"), 0, 2);
         grid.add(priceField, 1, 2);
-        grid.add(new Label("Поезд:"), 0, 3);
+        grid.add(createRequiredLabel("Поезд:"), 0, 3);
         grid.add(trainIdField, 1, 3);
-        grid.add(new Label("Вагон:"), 0, 4);
+        grid.add(createRequiredLabel("Вагон:"), 0, 4);
         grid.add(carriageSpinner, 1, 4);
-        grid.add(new Label("Место:"), 0, 5);
+        grid.add(createRequiredLabel("Место:"), 0, 5);
         grid.add(seatSpinner, 1, 5);
 
         // Динамические поля
-        grid.add(new Label("Дата отправления:"), 0, 6);
+        grid.add(createRequiredLabel("Дата отправления:"), 0, 6);
         grid.add(departurePicker, 1, 6);
-        grid.add(new Label("Дата возвращения:"), 0, 7);
+        grid.add(createRequiredLabel("Дата возвращения:"), 0, 7);
         grid.add(returnPicker, 1, 7);
-        grid.add(new Label("Срок действия (дни):"), 0, 8);
-        grid.add(durationSpinner, 1, 8);
+        grid.add(createRequiredLabel("Дата начала:"), 0, 8);
+        grid.add(seasonStartPicker, 1, 8);
+        grid.add(createRequiredLabel("Срок действия (дни):"), 0, 9);
+        grid.add(durationSpinner, 1, 9);
 
-        // Скрыть лишние поля по умолчанию
         toggleDynamicFields("Одноразовый");
         getDialogPane().setContent(grid);
         getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+    }
+
+    private Label createRequiredLabel(String text) {
+        Label label = new Label(text);
+        label.setStyle("-fx-text-fill: black; -fx-font-weight: bold;");
+        return label;
     }
 
     private void setupLogic() {
@@ -84,24 +99,40 @@ public class BookTicketDialog extends Dialog<Ticket> {
         });
     }
 
+    private void setupValidation() {
+        departurePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(date.isBefore(LocalDate.now()));
+            }
+        });
+
+        seasonStartPicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(date.isBefore(LocalDate.now()));
+            }
+        });
+    }
+
     private void toggleDynamicFields(String ticketType) {
         departurePicker.setVisible(ticketType.equals("Одноразовый") || ticketType.equals("Туда-обратно"));
         returnPicker.setVisible(ticketType.equals("Туда-обратно"));
+        seasonStartPicker.setVisible(ticketType.equals("Сезонный"));
         durationSpinner.setVisible(ticketType.equals("Сезонный"));
     }
 
     private Ticket createTicket() {
-        // Проверка обязательных полей
         validateCommonFields();
 
-        // Получение данных
         Passenger passenger = passengerCombo.getValue();
         double price = Double.parseDouble(priceField.getText());
         String trainId = trainIdField.getText().trim();
         int carriage = carriageSpinner.getValue();
         int seat = seatSpinner.getValue();
 
-        // Создание билета
         return switch (typeCombo.getValue()) {
             case "Одноразовый" -> createOneWayTicket(passenger, price, trainId, carriage, seat);
             case "Туда-обратно" -> createRoundTripTicket(passenger, price, trainId, carriage, seat);
@@ -110,9 +141,49 @@ public class BookTicketDialog extends Dialog<Ticket> {
         };
     }
 
+    private void validateCommonFields() {
+        if (passengerCombo.getValue() == null)
+            throw new IllegalArgumentException("Выберите пассажира");
+        if (priceField.getText().isEmpty())
+            throw new IllegalArgumentException("Укажите цену");
+        if (trainIdField.getText().trim().isEmpty())
+            throw new IllegalArgumentException("Укажите поезд");
+
+        try {
+            Double.parseDouble(priceField.getText());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Некорректный формат цены");
+        }
+
+        switch (typeCombo.getValue()) {
+            case "Одноразовый":
+                validateDate(departurePicker.getValue(), "Дата отправления");
+                break;
+            case "Туда-обратно":
+                validateDate(departurePicker.getValue(), "Дата отправления");
+                validateDate(returnPicker.getValue(), "Дата возвращения");
+                if (returnPicker.getValue().isBefore(departurePicker.getValue())) {
+                    throw new IllegalArgumentException("Дата возвращения не может быть раньше отправления");
+                }
+                break;
+            case "Сезонный":
+                validateDate(seasonStartPicker.getValue(), "Дата начала");
+                if (durationSpinner.getValue() <= 0) {
+                    throw new IllegalArgumentException("Срок действия должен быть больше 0 дней");
+                }
+                break;
+        }
+    }
+
+    private void validateDate(LocalDate date, String fieldName) {
+        if (date == null)
+            throw new IllegalArgumentException("Укажите " + fieldName);
+        if (date.isBefore(LocalDate.now()))
+            throw new IllegalArgumentException(fieldName + " не может быть в прошлом");
+    }
+
     private OneWayTicket createOneWayTicket(Passenger passenger, double price,
                                             String trainId, int carriage, int seat) {
-        validateDate(departurePicker.getValue());
         return new OneWayTicket(
                 price, passenger, trainId, carriage, seat, departurePicker.getValue()
         );
@@ -120,11 +191,6 @@ public class BookTicketDialog extends Dialog<Ticket> {
 
     private RoundTripTicket createRoundTripTicket(Passenger passenger, double price,
                                                   String trainId, int carriage, int seat) {
-        validateDate(departurePicker.getValue());
-        validateDate(returnPicker.getValue());
-        if (returnPicker.getValue().isBefore(departurePicker.getValue())) {
-            throw new IllegalArgumentException("Дата возвращения не может быть раньше отправления");
-        }
         return new RoundTripTicket(
                 price, passenger, trainId, carriage, seat,
                 departurePicker.getValue(), returnPicker.getValue()
@@ -133,43 +199,10 @@ public class BookTicketDialog extends Dialog<Ticket> {
 
     private SeasonalTicket createSeasonalTicket(Passenger passenger, double price,
                                                 String trainId, int carriage, int seat) {
-        int duration = durationSpinner.getValue();
-        if (duration <= 0) throw new IllegalArgumentException("Некорректный срок действия");
         return new SeasonalTicket(
                 price, passenger, trainId, carriage, seat,
-                LocalDate.now(), LocalDate.now().plusDays(duration), duration
+                seasonStartPicker.getValue(), durationSpinner.getValue()
         );
-    }
-
-    private void validateCommonFields() {
-        if (passengerCombo.getValue() == null) throw new IllegalArgumentException("Выберите пассажира");
-        if (priceField.getText().isEmpty()) throw new IllegalArgumentException("Укажите цену");
-        if (trainIdField.getText().trim().isEmpty()) throw new IllegalArgumentException("Укажите поезд");
-        try {
-            Double.parseDouble(priceField.getText());
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Некорректный формат цены");
-        }
-
-        // Валидация для типа билета
-        switch (typeCombo.getValue()) {
-            case "Туда-обратно":
-                validateDate(returnPicker.getValue());
-                if (returnPicker.getValue().isBefore(departurePicker.getValue())) {
-                    throw new IllegalArgumentException("Дата возвращения не может быть раньше отправления");
-                }
-                break;
-            case "Сезонный":
-                if (durationSpinner.getValue() <= 0) {
-                    throw new IllegalArgumentException("Некорректный срок действия");
-                }
-                break;
-        }
-    }
-
-    private void validateDate(LocalDate date) {
-        if (date == null) throw new IllegalArgumentException("Укажите дату");
-        if (date.isBefore(LocalDate.now())) throw new IllegalArgumentException("Дата не может быть в прошлом");
     }
 
     private void showError(String message) {
@@ -184,8 +217,7 @@ public class BookTicketDialog extends Dialog<Ticket> {
         @Override
         public String toString(Passenger passenger) {
             return passenger != null ?
-                    passenger.getLastName() + " " + passenger.getFirstName() + " (" + passenger.getType() + ")" :
-                    "";
+                    passenger.getLastName() + " " + passenger.getFirstName() + " (" + passenger.getType() + ")" : "";
         }
 
         @Override

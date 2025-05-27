@@ -3,55 +3,46 @@ package Model;
 import java.time.LocalDate;
 
 public class SeasonalTicket extends Ticket {
-    private LocalDate startDate;
-    private LocalDate endDate;
-    private int totalTrips;
-    private int usedTrips;
+    private final LocalDate startDate;
+    private final LocalDate endDate;
+    private final int durationDays;
 
-    public SeasonalTicket(double basePrice,
-                          Passenger passenger,
-                          String trainId,
-                          int carriageNumber,
-                          int seatNumber,
-                          LocalDate startDate,
-                          LocalDate endDate,
-                          int totalTrips) {
+    public SeasonalTicket(double basePrice, Passenger passenger, String trainId,
+                          int carriageNumber, int seatNumber,
+                          LocalDate startDate, int durationDays) {
         super(basePrice, passenger, trainId, carriageNumber, seatNumber);
-        validateSeason(startDate, endDate, totalTrips);
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.totalTrips = totalTrips;
-        this.usedTrips = 0;
-    }
 
-    private void validateSeason(LocalDate start, LocalDate end, int trips) {
-        if (start.isAfter(end)) {
-            throw new IllegalArgumentException("Дата начала не может быть позже окончания");
+        if (startDate == null) {
+            throw new IllegalArgumentException("[Ошибка] Дата начала не может быть null");
         }
-        if (trips <= 0) {
-            throw new IllegalArgumentException("Количество поездок должно быть больше 0");
+        if (durationDays <= 0) {
+            throw new IllegalArgumentException("[Ошибка] Срок действия должен быть больше 0 дней");
         }
+
+        this.startDate = startDate;
+        this.durationDays = durationDays;
+        this.endDate = startDate.plusDays(durationDays);
     }
 
     @Override
     public double calculateFinalPrice() {
-        // Скидка 20% за сезонность + 10% за срок >30 дней
-        long durationDays = endDate.toEpochDay() - startDate.toEpochDay();
-        double durationDiscount = (durationDays > 30) ? 0.9 : 1.0;
-        return passenger.calculateTicketPrice(basePrice) * 0.8 * durationDiscount;
+        // Пример: скидка 20% для сезонных билетов
+        return basePrice * 0.8;
     }
 
-    public void useTrip() {
-        if (usedTrips < totalTrips) {
-            usedTrips++;
-        } else {
-            setStatus("USED");
-        }
+    public LocalDate getStartDate() {
+        return startDate;
     }
 
-    // Геттеры
-    public LocalDate getStartDate() { return startDate; }
-    public LocalDate getEndDate() { return endDate; }
-    public int getTotalTrips() { return totalTrips; }
-    public int getUsedTrips() { return usedTrips; }
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public int getDurationDays() {
+        return durationDays;
+    }
+
+    public LocalDate getDepartureDate() {
+        return startDate; // Для совместимости с таблицей
+    }
 }
