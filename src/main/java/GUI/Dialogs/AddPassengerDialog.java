@@ -3,48 +3,44 @@ package GUI.Dialogs;
 import Model.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.util.Callback;
+import javafx.util.StringConverter;
 import java.time.LocalDate;
 
 public class AddPassengerDialog extends Dialog<Passenger> {
-    private final GridPane grid = new GridPane();
     private final TextField firstNameField = new TextField();
     private final TextField lastNameField = new TextField();
     private final DatePicker birthDatePicker = new DatePicker();
     private final TextField phoneField = new TextField();
-    private final Spinner<Integer> carriageSpinner = new Spinner<>(1, 10, 1);
-    private final Spinner<Integer> seatSpinner = new Spinner<>(1, 30, 1);
-    private final TextField trainIdField = new TextField();
-    private final ComboBox<String> typeComboBox = new ComboBox<>();
+    private final ComboBox<String> typeCombo = new ComboBox<>();
 
-    // VIP-поля
+    // Поля для VIP-пассажира
     private final CheckBox loungeAccessCheck = new CheckBox("Доступ в VIP-зал");
     private final TextArea specialRequestsArea = new TextArea();
 
     public AddPassengerDialog() {
         setupDialog();
-        setupTypeDependentUI();
+        setupLayout();
         setupResultConverter();
     }
 
     private void setupDialog() {
-        this.setTitle("Добавить пассажира");
-        this.setHeaderText("Заполните данные пассажира");
+        setTitle("Добавить пассажира");
+        setHeaderText("Заполните данные пассажира");
 
-        typeComboBox.getItems().addAll("Обычный", "Ребёнок", "Пенсионер", "VIP");
-        typeComboBox.setValue("Обычный");
-        typeComboBox.setOnAction(e -> toggleVipFields());
-
-        grid.setHgap(10);
-        grid.setVgap(10);
-        buildBaseForm();
-        this.getDialogPane().setContent(grid);
-        this.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        // Настройка ComboBox
+        typeCombo.getItems().addAll("Обычный", "Ребёнок", "Пенсионер", "VIP");
+        typeCombo.setValue("Обычный");
+        typeCombo.setOnAction(e -> toggleVipFields());
     }
 
-    private void buildBaseForm() {
+    private void setupLayout() {
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+
+        // Основные поля
         grid.add(new Label("Тип:"), 0, 0);
-        grid.add(typeComboBox, 1, 0);
+        grid.add(typeCombo, 1, 0);
         grid.add(new Label("Имя:"), 0, 1);
         grid.add(firstNameField, 1, 1);
         grid.add(new Label("Фамилия:"), 0, 2);
@@ -53,44 +49,31 @@ public class AddPassengerDialog extends Dialog<Passenger> {
         grid.add(birthDatePicker, 1, 3);
         grid.add(new Label("Телефон:"), 0, 4);
         grid.add(phoneField, 1, 4);
-        grid.add(new Label("Вагон:"), 0, 5);
-        grid.add(carriageSpinner, 1, 5);
-        grid.add(new Label("Место:"), 0, 6);
-        grid.add(seatSpinner, 1, 6);
-        grid.add(new Label("Поезд:"), 0, 7);
-        grid.add(trainIdField, 1, 7);
-    }
 
-    private void setupTypeDependentUI() {
-        // VIP-поля (изначально скрыты)
-        grid.add(new Label("VIP доступ:"), 0, 8);
-        grid.add(loungeAccessCheck, 1, 8);
-        grid.add(new Label("Особые пожелания:"), 0, 9);
-        grid.add(specialRequestsArea, 1, 9);
-        toggleVipFields();
+        // VIP-поля (скрыты по умолчанию)
+        grid.add(new Label("VIP доступ:"), 0, 5);
+        grid.add(loungeAccessCheck, 1, 5);
+        grid.add(new Label("Особые пожелания:"), 0, 6);
+        grid.add(specialRequestsArea, 1, 6);
+
+        toggleVipFields(); // Скрыть/показать VIP-поля
+        getDialogPane().setContent(grid);
+        getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
     }
 
     private void toggleVipFields() {
-        boolean isVip = "VIP".equals(typeComboBox.getValue());
+        boolean isVip = "VIP".equals(typeCombo.getValue());
         loungeAccessCheck.setVisible(isVip);
         specialRequestsArea.setVisible(isVip);
-        grid.getChildren().forEach(node -> {
-            Integer row = GridPane.getRowIndex(node);
-            if (row != null && row >= 8) {
-                node.setVisible(isVip);
-                node.setManaged(isVip);
-            }
-        });
     }
 
     private void setupResultConverter() {
-        this.setResultConverter(buttonType -> {
+        setResultConverter(buttonType -> {
             if (buttonType == ButtonType.OK) {
                 try {
                     return createPassenger();
                 } catch (IllegalArgumentException e) {
                     showError(e.getMessage());
-                    return null;
                 }
             }
             return null;
@@ -98,8 +81,11 @@ public class AddPassengerDialog extends Dialog<Passenger> {
     }
 
     private Passenger createPassenger() {
-        String type = typeComboBox.getValue();
-        return switch (type) {
+        // Валидация общих данных
+        validateCommonFields();
+
+        // Создание пассажира в зависимости от типа
+        return switch (typeCombo.getValue()) {
             case "Ребёнок" -> createChildPassenger();
             case "Пенсионер" -> createSeniorPassenger();
             case "VIP" -> createVipPassenger();
@@ -107,53 +93,52 @@ public class AddPassengerDialog extends Dialog<Passenger> {
         };
     }
 
+    private void validateCommonFields() {
+        if (firstNameField.getText().trim().isEmpty())
+            throw new IllegalArgumentException("Введите имя");
+        if (lastNameField.getText().trim().isEmpty())
+            throw new IllegalArgumentException("Введите фамилию");
+        if (birthDatePicker.getValue() == null)
+            throw new IllegalArgumentException("Укажите дату рождения");
+        if (phoneField.getText().trim().isEmpty())
+            throw new IllegalArgumentException("Введите телефон");
+    }
+
     private ChildPassenger createChildPassenger() {
         return new ChildPassenger(
-                firstNameField.getText(),
-                lastNameField.getText(),
+                firstNameField.getText().trim(),
+                lastNameField.getText().trim(),
                 birthDatePicker.getValue(),
-                phoneField.getText(),
-                carriageSpinner.getValue(),
-                seatSpinner.getValue(),
-                trainIdField.getText()
+                phoneField.getText().trim()
         );
     }
 
     private SeniorPassenger createSeniorPassenger() {
         return new SeniorPassenger(
-                firstNameField.getText(),
-                lastNameField.getText(),
+                firstNameField.getText().trim(),
+                lastNameField.getText().trim(),
                 birthDatePicker.getValue(),
-                phoneField.getText(),
-                carriageSpinner.getValue(),
-                seatSpinner.getValue(),
-                trainIdField.getText()
+                phoneField.getText().trim()
         );
     }
 
     private VIPPassenger createVipPassenger() {
         return new VIPPassenger(
-                firstNameField.getText(),
-                lastNameField.getText(),
+                firstNameField.getText().trim(),
+                lastNameField.getText().trim(),
                 birthDatePicker.getValue(),
-                phoneField.getText(),
-                carriageSpinner.getValue(),
-                seatSpinner.getValue(),
-                trainIdField.getText(),
+                phoneField.getText().trim(),
                 loungeAccessCheck.isSelected(),
-                specialRequestsArea.getText()
+                specialRequestsArea.getText().trim()
         );
     }
 
     private RegularPassenger createRegularPassenger() {
         return new RegularPassenger(
-                firstNameField.getText(),
-                lastNameField.getText(),
+                firstNameField.getText().trim(),
+                lastNameField.getText().trim(),
                 birthDatePicker.getValue(),
-                phoneField.getText(),
-                carriageSpinner.getValue(),
-                seatSpinner.getValue(),
-                trainIdField.getText()
+                phoneField.getText().trim()
         );
     }
 

@@ -1,9 +1,10 @@
 package Model;
+
 import java.time.LocalDate;
 
 /**
- * Абстрактный класс для льготных пассажиров. 
- * Добавляет общую логику для расчёта скидок.
+ * Абстрактный класс для льготных пассажиров.
+ * Реализует общую логику расчёта скидки.
  */
 public abstract class DiscountPassenger extends Passenger {
     protected double discountRate; // Размер скидки (например, 0.5 для 50%)
@@ -12,15 +13,15 @@ public abstract class DiscountPassenger extends Passenger {
                              String lastName,
                              LocalDate birthDate,
                              String contactPhone,
-                             int carriageNumber,
-                             int seatNumber,
-                             String trainId,
                              double discountRate) {
-        super(firstName, lastName, birthDate, contactPhone, carriageNumber, seatNumber, trainId);
+        super(firstName, lastName, birthDate, contactPhone);
         setDiscountRate(discountRate);
     }
 
-    // Валидация скидки
+    /**
+     * Устанавливает размер скидки с валидацией.
+     * @param discountRate значение от 0.0 до 1.0
+     */
     public void setDiscountRate(double discountRate) {
         if (discountRate < 0 || discountRate > 1) {
             throw new IllegalArgumentException("Скидка должна быть в диапазоне [0.0, 1.0]");
@@ -28,22 +29,19 @@ public abstract class DiscountPassenger extends Passenger {
         this.discountRate = discountRate;
     }
 
-    @Override
-    public String getDetails() {
-        return String.format(
-                "[Льготный] %s | Скидка: %.0f%%",
-                super.getDetails(),
-                discountRate * 100
-        );
-    }
-
     /**
      * Расчёт стоимости билета с учётом скидки.
-     * @param basePrice - базовая цена билета
+     * @param basePrice базовая цена
      * @return итоговая стоимость
      */
     @Override
     public double calculateTicketPrice(double basePrice) {
         return basePrice * (1 - discountRate);
     }
+
+    /**
+     * Абстрактный метод для получения типа пассажира.
+     */
+    @Override
+    public abstract String getType();
 }

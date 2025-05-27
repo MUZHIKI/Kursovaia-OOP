@@ -1,4 +1,3 @@
-// SeasonalTicket.java
 package Model;
 
 import java.time.LocalDate;
@@ -9,71 +8,50 @@ public class SeasonalTicket extends Ticket {
     private int totalTrips;
     private int usedTrips;
 
-    public SeasonalTicket(double basePrice, Passenger passenger, String trainId,
-                          LocalDate startDate, LocalDate endDate, int totalTrips) {
-        super(basePrice, passenger, trainId);
+    public SeasonalTicket(double basePrice,
+                          Passenger passenger,
+                          String trainId,
+                          int carriageNumber,
+                          int seatNumber,
+                          LocalDate startDate,
+                          LocalDate endDate,
+                          int totalTrips) {
+        super(basePrice, passenger, trainId, carriageNumber, seatNumber);
+        validateSeason(startDate, endDate, totalTrips);
         this.startDate = startDate;
         this.endDate = endDate;
         this.totalTrips = totalTrips;
         this.usedTrips = 0;
-        updateFormattedPrice(); // Вызываем после полной инициализации
+    }
+
+    private void validateSeason(LocalDate start, LocalDate end, int trips) {
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("Дата начала не может быть позже окончания");
+        }
+        if (trips <= 0) {
+            throw new IllegalArgumentException("Количество поездок должно быть больше 0");
+        }
     }
 
     @Override
     public double calculateFinalPrice() {
-        if (passenger == null || startDate == null || endDate == null) {
-            return basePrice * 0.8; // Базовая скидка 20%
-        }
-
+        // Скидка 20% за сезонность + 10% за срок >30 дней
         long durationDays = endDate.toEpochDay() - startDate.toEpochDay();
-        double discount = (durationDays > 30) ? 0.9 : 1.0; // Дополнительная скидка для долгосрочных билетов
+        double durationDiscount = (durationDays > 30) ? 0.9 : 1.0;
+        return passenger.calculateTicketPrice(basePrice) * 0.8 * durationDiscount;
+    }
 
-        return passenger.calculateTicketPrice(basePrice) * 0.8 * discount;
+    public void useTrip() {
+        if (usedTrips < totalTrips) {
+            usedTrips++;
+        } else {
+            setStatus("USED");
+        }
     }
 
     // Геттеры
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-
-    public LocalDate getEndDate() {
-        return endDate;
-    }
-
-    public int getTotalTrips() {
-        return totalTrips;
-    }
-
-    public int getUsedTrips() {
-        return usedTrips;
-    }
-
-    public int getRemainingTrips() {
-        return totalTrips - usedTrips;
-    }
-
-    // Сеттеры
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-        updateFormattedPrice();
-    }
-
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-        updateFormattedPrice();
-    }
-
-    public void setTotalTrips(int totalTrips) {
-        this.totalTrips = totalTrips;
-        updateFormattedPrice();
-    }
-
-    // Метод для использования поездки
-    public boolean useTrip() {
-        if (usedTrips < totalTrips) {
-            usedTrips++;
-            return true;
-        }
-        return false;
-    }
+    public LocalDate getStartDate() { return startDate; }
+    public LocalDate getEndDate() { return endDate; }
+    public int getTotalTrips() { return totalTrips; }
+    public int getUsedTrips() { return usedTrips; }
 }

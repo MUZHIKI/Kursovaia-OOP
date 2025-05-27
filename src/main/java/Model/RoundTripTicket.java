@@ -1,4 +1,3 @@
-// RoundTripTicket.java
 package Model;
 
 import java.time.LocalDate;
@@ -6,51 +5,36 @@ import java.time.LocalDate;
 public class RoundTripTicket extends Ticket {
     private LocalDate departureDate;
     private LocalDate returnDate;
-    private String seat;
 
-    public RoundTripTicket(double basePrice, Passenger passenger, String trainId,
-                           LocalDate departureDate, LocalDate returnDate, String seat) {
-        super(basePrice, passenger, trainId);
+    public RoundTripTicket(double basePrice,
+                           Passenger passenger,
+                           String trainId,
+                           int carriageNumber,
+                           int seatNumber,
+                           LocalDate departureDate,
+                           LocalDate returnDate) {
+        super(basePrice, passenger, trainId, carriageNumber, seatNumber);
+        validateDates(departureDate, returnDate);
         this.departureDate = departureDate;
         this.returnDate = returnDate;
-        this.seat = seat;
-        updateFormattedPrice(); // Вызываем после полной инициализации
+    }
+
+    private void validateDates(LocalDate departure, LocalDate returnDate) {
+        if (departure == null || returnDate == null) {
+            throw new IllegalArgumentException("Даты отправления и возвращения обязательны");
+        }
+        if (returnDate.isBefore(departure)) {
+            throw new IllegalArgumentException("Дата возвращения не может быть раньше отправления");
+        }
     }
 
     @Override
     public double calculateFinalPrice() {
-        if (passenger == null) {
-            return basePrice * 1.85; // Билет туда-обратно со скидкой 15%
-        }
-
-        return passenger.calculateTicketPrice(basePrice) * 1.85; // 15% скидка от двойной цены
+        // Скидка 15% на билеты туда-обратно + скидка пассажира
+        return passenger.calculateTicketPrice(basePrice) * 0.85;
     }
 
     // Геттеры
-    public LocalDate getDepartureDate() {
-        return departureDate;
-    }
-
-    public LocalDate getReturnDate() {
-        return returnDate;
-    }
-
-    public String getSeat() {
-        return seat;
-    }
-
-    // Сеттеры
-    public void setDepartureDate(LocalDate departureDate) {
-        this.departureDate = departureDate;
-        updateFormattedPrice();
-    }
-
-    public void setReturnDate(LocalDate returnDate) {
-        this.returnDate = returnDate;
-        updateFormattedPrice();
-    }
-
-    public void setSeat(String seat) {
-        this.seat = seat;
-    }
+    public LocalDate getDepartureDate() { return departureDate; }
+    public LocalDate getReturnDate() { return returnDate; }
 }
