@@ -21,11 +21,16 @@ public class OneWayTicket extends Ticket {
 
     @Override
     public double calculateFinalPrice() {
-        // Пример: скидка 10% для пенсионеров
-        if (getPassenger().getType().equals("Пенсионер")) {
-            return basePrice * 0.9;
+        // Пример: скидка 10% для детей и пенсионеров
+        String passengerType = getPassenger().getType();
+        if (passengerType.equals("Ребёнок") || passengerType.equals("Пенсионер")) {
+            return getBasePrice() * 0.9;
         }
-        return basePrice;
+        // Наценка 20% для VIP
+        if (passengerType.equals("VIP")) {
+            return getBasePrice() * 1.2;
+        }
+        return getBasePrice();
     }
 
     // Для отображения в таблице

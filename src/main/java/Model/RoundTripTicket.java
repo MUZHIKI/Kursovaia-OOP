@@ -24,8 +24,16 @@ public class RoundTripTicket extends Ticket {
 
     @Override
     public double calculateFinalPrice() {
-        // Пример: скидка 15% на билеты туда-обратно
-        return basePrice * 0.85;
+        // Пример: скидка 10% для детей и пенсионеров
+        String passengerType = getPassenger().getType();
+        if (passengerType.equals("Ребёнок") || passengerType.equals("Пенсионер")) {
+            return (getBasePrice() * 0.9)*0.85;
+        }
+        // Наценка 20% для VIP
+        if (passengerType.equals("VIP")) {
+            return (getBasePrice() * 1.2)*0.85;
+        }
+        return getBasePrice();
     }
 
     public LocalDate getReturnDate() {
