@@ -7,7 +7,6 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -49,18 +48,18 @@ public class PassengerTableView extends TableView<Passenger> {
         TableColumn<Passenger, String> phoneCol = new TableColumn<>("Телефон");
         phoneCol.setCellValueFactory(new PropertyValueFactory<>("contactPhone"));
 
-        TableColumn<Passenger, Boolean> vipAccessCol = new TableColumn<>("VIP доступ");
+        // Колонка "VIP доступ"
+        TableColumn<Passenger, String> vipAccessCol = new TableColumn<>("VIP доступ");
         vipAccessCol.setCellFactory(column -> new TableCell<>() {
             @Override
-            protected void updateItem(Boolean isVip, boolean empty) {
-                super.updateItem(isVip, empty);
-                if (empty || getItem() == null) {
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
                     setText("");
                 } else {
                     Passenger passenger = getTableView().getItems().get(getIndex());
-                    if (passenger instanceof VIPPassenger) {
-                        boolean access = ((VIPPassenger) passenger).hasLoungeAccess();
-                        setText(access ? "Да" : "Нет");
+                    if (passenger instanceof VIPPassenger vip) {
+                        setText(vip.hasLoungeAccess() ? "Да" : "Нет");
                     } else {
                         setText("Н/Д");
                     }
@@ -68,18 +67,18 @@ public class PassengerTableView extends TableView<Passenger> {
             }
         });
 
-// Колонка "Пожелания"
+        // Колонка "Пожелания"
         TableColumn<Passenger, String> specialRequestsCol = new TableColumn<>("Пожелания");
         specialRequestsCol.setCellFactory(column -> new TableCell<>() {
             @Override
-            protected void updateItem(String request, boolean empty) {
-                super.updateItem(request, empty);
-                if (empty || getItem() == null) {
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
                     setText("");
                 } else {
                     Passenger passenger = getTableView().getItems().get(getIndex());
-                    if (passenger instanceof VIPPassenger) {
-                        String requests = ((VIPPassenger) passenger).getSpecialRequests();
+                    if (passenger instanceof VIPPassenger vip) {
+                        String requests = vip.getSpecialRequests();
                         setText(requests.isEmpty() ? "-" : requests);
                     } else {
                         setText("-");
